@@ -10,8 +10,7 @@ generated string is assigned to the `*anti-forgery-token*` var. This token must
 be included as a parameter named "__anti-forgery-token" for all POST requests
 to the handler. Typically you'll add this to a hidden input field:
 
-    (str "<input type='hidden' name='__anti-forgery-token' value='"
-         *anti-forgery-token* "'>")
+    (str "<input type='hidden' name='__anti-forgery-token' value='" *anti-forgery-token* "'>")
 
 A cookie of the same name is added to the response body by the middleware. If
 the cookie and the POST parameter don't match, then a 403 Forbidden response
