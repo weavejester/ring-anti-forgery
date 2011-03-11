@@ -16,6 +16,12 @@ A cookie of the same name is added to the response body by the middleware. If
 the cookie and the POST parameter don't match, then a 403 Forbidden response
 is returned. This ensures that requests cannot be POSTed from other domains.
 
+## Install
+
+Add the following dependency to your `project.clj`:
+
+    [[ring-anti-forgery "0.1.0"]]
+
 ## Caveats
 
 The anti-forgery middleware will prevent POSTs working for web service routes,
