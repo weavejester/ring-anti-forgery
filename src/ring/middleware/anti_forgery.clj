@@ -4,7 +4,7 @@
   (:import java.security.SecureRandom
            sun.misc.BASE64Encoder))
 
-(def ^{:doc "Binding that stores a anti-forgery token that must be included
+(def ^:dynamic ^{:doc "Binding that stores a anti-forgery token that must be included
   in POST forms if the handler is wrapped in wrap-anti-forgery."}
   *anti-forgery-token*)
 
