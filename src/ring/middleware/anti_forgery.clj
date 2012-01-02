@@ -1,6 +1,5 @@
 (ns ring.middleware.anti-forgery
   "Ring middleware to prevent CSRF attacks with an anti-forgery token."
-  (:require [clojure.contrib.base64 :as base64])
   (:import java.security.SecureRandom
            sun.misc.BASE64Encoder))
 
