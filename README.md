@@ -20,7 +20,7 @@ is returned. This ensures that requests cannot be POSTed from other domains.
 
 Add the following dependency to your `project.clj`:
 
-    [ring-anti-forgery "0.1.0"]
+    [ring-anti-forgery "0.1.1"]
 
 ## Caveats
 
