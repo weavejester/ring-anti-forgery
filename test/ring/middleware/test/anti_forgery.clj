@@ -35,3 +35,8 @@
     (let [response ((wrap-anti-forgery handler) (request :get "/"))]
       (is (= (get-in response [:cookies "__anti-forgery-token"])
              (:body response))))))
+
+(deftest nil-response
+  (letfn [(handler [request] nil)]
+    (let [response ((wrap-anti-forgery handler) (request :get "/"))]
+      (is (nil? response)))))
