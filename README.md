@@ -3,6 +3,12 @@
 This middleware prevents [CSRF][1] attacks by providing a randomly-generated
 anti-forgery token.
 
+## Install
+
+Add the following dependency to your `project.clj`:
+
+    [ring-anti-forgery "0.1.1"]
+
 ## Usage
 
 When a handler is wrapped in the `wrap-anti-forgery` middleware, a randomly-
@@ -16,16 +22,10 @@ A cookie of the same name is added to the response body by the middleware. If
 the cookie and the POST parameter don't match, then a 403 Forbidden response
 is returned. This ensures that requests cannot be POSTed from other domains.
 
-## Install
-
-Add the following dependency to your `project.clj`:
-
-    [ring-anti-forgery "0.1.1"]
-
 ## Caveats
 
 The anti-forgery middleware will prevent POSTs working for web service routes,
-so you should only  apply this middleware to the part of your website meant
+so you should only apply this middleware to the part of your website meant
 for browsers.
 
 [1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
