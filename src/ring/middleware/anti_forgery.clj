@@ -40,4 +40,5 @@
     (binding [*anti-forgery-token* (generate-token)]
       (if (and (post-request? request) (not (valid-request? request)))
         (access-denied "<h1>Invalid anti-forgery token</h1>")
-        (assoc-token-cookie (handler request))))))
+        (if-let [response (handler request)]
+          (assoc-token-cookie response))))))
