@@ -40,3 +40,12 @@
   (letfn [(handler [request] nil)]
     (let [response ((wrap-anti-forgery handler) (request :get "/"))]
       (is (nil? response)))))
+
+(deftest no-lf-in-token-test
+  (letfn [(handler [request]
+            {:status 200
+             :headers {}
+             :body *anti-forgery-token*})]
+    (let [response ((wrap-anti-forgery handler) (request :get "/"))
+          token    (get-in response [:cookies "__anti-forgery-token"])]
+      (is (not (.contains token "\n"))))))

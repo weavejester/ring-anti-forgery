@@ -8,7 +8,7 @@
   *anti-forgery-token*)
 
 (defn- generate-token []
-  (let [seed (byte-array 64)]
+  (let [seed (byte-array 32)]
     (.nextBytes (SecureRandom/getInstance "SHA1PRNG") seed)
     (.encode (BASE64Encoder.) seed)))
 
