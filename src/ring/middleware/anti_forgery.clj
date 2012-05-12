@@ -12,8 +12,12 @@
     (.nextBytes (SecureRandom/getInstance "SHA1PRNG") seed)
     (.encode (BASE64Encoder.) seed)))
 
+(defn- form-params [req]
+  (merge (:form-params req)
+         (:multipart-params req)))
+
 (defn- valid-request? [req]
-  (let [param-token  (get-in req [:form-params "__anti-forgery-token"])
+  (let [param-token  (-> req form-params (get "__anti-forgery-token"))
         cookie-token (get-in req [:cookies "__anti-forgery-token" :value])]
     (and param-token
          cookie-token

@@ -17,6 +17,16 @@
               (assoc :cookies {"__anti-forgery-token" {:value "foo"}})
               (assoc :form-params {"__anti-forgery-token" "foo"})))))
 
+(deftest multipart-form-test
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery (constantly response))]
+    (is (= (-> (request :post "/")
+               (assoc :cookies {"__anti-forgery-token" {:value "foo"}})
+               (assoc :multipart-params {"__anti-forgery-token" "foo"})
+               handler
+               :status)
+           200))))
+
 (deftest token-in-cookie-test
   (let [response {:status 200, :headers {}, :body "Foo"}
         handler  (wrap-anti-forgery (constantly response))]
