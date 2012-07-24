@@ -1,16 +1,13 @@
 (ns ring.middleware.anti-forgery
   "Ring middleware to prevent CSRF attacks with an anti-forgery token."
-  (:import java.security.SecureRandom
-           sun.misc.BASE64Encoder))
+  (:require [crypto.random :as random]))
 
 (def ^:dynamic ^{:doc "Binding that stores a anti-forgery token that must be included
   in POST forms if the handler is wrapped in wrap-anti-forgery."}
   *anti-forgery-token*)
 
 (defn- generate-token []
-  (let [seed (byte-array 32)]
-    (.nextBytes (SecureRandom/getInstance "SHA1PRNG") seed)
-    (.encode (BASE64Encoder.) seed)))
+  (random/base64 32))
 
 (defn- form-params [req]
   (merge (:form-params req)
