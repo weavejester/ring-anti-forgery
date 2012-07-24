@@ -7,22 +7,26 @@
           in POST forms if the handler is wrapped in wrap-anti-forgery."}
   *anti-forgery-token*)
 
-(defn- generate-token []
-  (random/base64 32))
+(defn- session-token [request]
+  (or (get-in request [:session "__anti-forgery-token"])
+      (random/base64 60)))
+
+(defn- assoc-session-token [response request token]
+  (let [old-token (get-in request [:session "__anti-forgery-token"])]
+    (if (= old-token token)
+      response
+      (assoc-in response [:session "__anti-forgery-token"] token))))
 
 (defn- form-params [request]
   (merge (:form-params request)
          (:multipart-params request)))
 
 (defn- valid-request? [request]
-  (let [param-token   (-> request form-params (get "__anti-forgery-token"))
-        session-token (get-in request [:session "__anti-forgery-token"])]
+  (let [param-token  (-> request form-params (get "__anti-forgery-token"))
+        stored-token (session-token request)]
     (and param-token
-         session-token
-         (= param-token session-token))))
-
-(defn- assoc-session-token [response]
-  (assoc-in response [:session "__anti-forgery-token"] *anti-forgery-token*))
+         stored-token
+         (= param-token stored-token))))
 
 (defn- post-request? [request]
   (= :post (:request-method request)))
@@ -39,8 +43,8 @@
   denied response is returned."
   [handler]
   (fn [request]
-    (binding [*anti-forgery-token* (generate-token)]
+    (binding [*anti-forgery-token* (session-token request)]
       (if (and (post-request? request) (not (valid-request? request)))
         (access-denied "<h1>Invalid anti-forgery token</h1>")
         (if-let [response (handler request)]
-          (assoc-session-token response))))))
+          (assoc-session-token response request *anti-forgery-token*))))))

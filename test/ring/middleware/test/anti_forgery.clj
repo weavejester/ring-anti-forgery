@@ -27,7 +27,7 @@
                :status)
            200))))
 
-(deftest token-in-cookie-test
+(deftest token-in-session-test
   (let [response {:status 200, :headers {}, :body "Foo"}
         handler  (wrap-anti-forgery (constantly response))]
     (is (contains? (:session (handler (request :get "/")))
@@ -46,7 +46,7 @@
       (is (= (get-in response [:session "__anti-forgery-token"])
              (:body response))))))
 
-(deftest nil-response
+(deftest nil-response-test
   (letfn [(handler [request] nil)]
     (let [response ((wrap-anti-forgery handler) (request :get "/"))]
       (is (nil? response)))))
@@ -59,3 +59,11 @@
     (let [response ((wrap-anti-forgery handler) (request :get "/"))
           token    (get-in response [:session "__anti-forgery-token"])]
       (is (not (.contains token "\n"))))))
+
+(deftest single-token-per-session-test
+  (let [expected {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery (constantly expected))
+        actual   (handler
+                  (-> (request :get "/")
+                      (assoc-in [:session "__anti-forgery-token"] "foo")))]
+    (is (= actual expected))))
