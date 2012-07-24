@@ -2,26 +2,27 @@
   "Ring middleware to prevent CSRF attacks with an anti-forgery token."
   (:require [crypto.random :as random]))
 
-(def ^:dynamic ^{:doc "Binding that stores a anti-forgery token that must be included
-  in POST forms if the handler is wrapped in wrap-anti-forgery."}
+(def ^:dynamic
+  ^{:doc "Binding that stores a anti-forgery token that must be included
+          in POST forms if the handler is wrapped in wrap-anti-forgery."}
   *anti-forgery-token*)
 
 (defn- generate-token []
   (random/base64 32))
 
-(defn- form-params [req]
-  (merge (:form-params req)
-         (:multipart-params req)))
+(defn- form-params [request]
+  (merge (:form-params request)
+         (:multipart-params request)))
 
-(defn- valid-request? [req]
-  (let [param-token  (-> req form-params (get "__anti-forgery-token"))
-        cookie-token (get-in req [:cookies "__anti-forgery-token" :value])]
+(defn- valid-request? [request]
+  (let [param-token   (-> request form-params (get "__anti-forgery-token"))
+        session-token (get-in request [:session "__anti-forgery-token"])]
     (and param-token
-         cookie-token
-         (= param-token cookie-token))))
+         session-token
+         (= param-token session-token))))
 
-(defn- assoc-token-cookie [response]
-  (assoc-in response [:cookies "__anti-forgery-token"] *anti-forgery-token*))
+(defn- assoc-session-token [response]
+  (assoc-in response [:session "__anti-forgery-token"] *anti-forgery-token*))
 
 (defn- post-request? [request]
   (= :post (:request-method request)))
@@ -42,4 +43,4 @@
       (if (and (post-request? request) (not (valid-request? request)))
         (access-denied "<h1>Invalid anti-forgery token</h1>")
         (if-let [response (handler request)]
-          (assoc-token-cookie response))))))
+          (assoc-session-token response))))))
