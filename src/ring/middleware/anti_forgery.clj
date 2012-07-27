@@ -21,12 +21,18 @@
   (merge (:form-params request)
          (:multipart-params request)))
 
+(defn- secure-eql? [^String a ^String b]
+  (if (and a b (= (.length a) (.length b)))
+    (zero? (reduce bit-or
+                   (map bit-xor (.getBytes a) (.getBytes b))))
+    false))
+
 (defn- valid-request? [request]
   (let [param-token  (-> request form-params (get "__anti-forgery-token"))
         stored-token (session-token request)]
     (and param-token
          stored-token
-         (= param-token stored-token))))
+         (secure-eql? param-token stored-token))))
 
 (defn- post-request? [request]
   (= :post (:request-method request)))
