@@ -7,7 +7,7 @@ anti-forgery token.
 
 Add the following dependency to your `project.clj`:
 
-    [ring-anti-forgery "0.1.3"]
+    [ring-anti-forgery "0.2.0"]
 
 ## Usage
 

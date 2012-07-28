@@ -1,4 +1,4 @@
-(defproject ring-anti-forgery "0.2.0-SNAPSHOT"
+(defproject ring-anti-forgery "0.2.0"
   :description "Ring middleware to prevent CSRF attacks"
   :url "https://github.com/weavejester/ring-anti-forgery"
   :license {:name "The MIT License"
