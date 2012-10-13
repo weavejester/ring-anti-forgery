@@ -7,4 +7,6 @@
                  [crypto-random "1.1.0"]
                  [hiccup "1.0.0"]]
   :profiles
-  {:dev {:dependencies [[ring-mock "0.1.1"]]}})
+  {:dev {:dependencies [[ring-mock "0.1.1"]]}
+   :1.3 {:dependencies [[org.clojure/clojure "1.3.0"]]}
+   :1.4 {:dependencies [[org.clojure/clojure "1.4.0"]]}})
