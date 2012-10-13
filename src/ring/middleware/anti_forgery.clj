@@ -15,7 +15,9 @@
   (let [old-token (get-in request [:session "__anti-forgery-token"])]
     (if (= old-token token)
       response
-      (assoc-in response [:session "__anti-forgery-token"] token))))
+      (-> response
+          (assoc :session (:session request))
+          (assoc-in [:session "__anti-forgery-token"] token)))))
 
 (defn- form-params [request]
   (merge (:form-params request)

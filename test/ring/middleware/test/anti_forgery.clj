@@ -67,3 +67,11 @@
                   (-> (request :get "/")
                       (assoc-in [:session "__anti-forgery-token"] "foo")))]
     (is (= actual expected))))
+
+(deftest not-overwrite-session-test
+  (let [response {:status 200 :headers {} :body nil}
+        handler  (wrap-anti-forgery (constantly response))
+        session  (:session (handler (-> (request :get "/")
+                                        (assoc-in [:session "foo"] "bar"))))]
+    (is (contains? session "__anti-forgery-token"))
+    (is (= (session "foo") "bar"))))
