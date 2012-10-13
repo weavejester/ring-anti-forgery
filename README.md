@@ -39,3 +39,9 @@ so you should only apply this middleware to the part of your website meant
 for browsers.
 
 [1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
+
+## License
+
+Copyright © 2012 James Reeves
+
+Distributed under the MIT License.
