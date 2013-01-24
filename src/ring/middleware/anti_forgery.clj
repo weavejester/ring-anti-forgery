@@ -30,7 +30,8 @@
     false))
 
 (defn- valid-request? [request]
-  (let [param-token  (-> request form-params (get "__anti-forgery-token"))
+  (let [param-token  (or (-> request form-params (get "__anti-forgery-token"))
+                         (-> request :headers (get "x-anti-forgery-token")))
         stored-token (session-token request)]
     (and param-token
          stored-token
