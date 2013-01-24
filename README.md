@@ -16,7 +16,7 @@ Add the following dependency to your `project.clj`:
 When a handler is wrapped in the `wrap-anti-forgery` middleware, a randomly-
 generated string is assigned to the `*anti-forgery-token*` var. This token must
 be included as a parameter named "__anti-forgery-token" for all POST requests
-to the handler.
+to the handler, or as the value of the HTTP header X-Anti-Forgery-Token.
 
 The ring-anti-forgery middleware includes a function to create a
 hidden field that you can add to your forms:
@@ -25,6 +25,16 @@ hidden field that you can add to your forms:
 (use 'ring.util.anti-forgery)
 
 (anti-forgery-field)   ;; returns a hidden field with the anti-forgery token
+```
+
+If you use XHR to perform requests from the client to your server, you typically
+send JSON instead of form encoded data. In this scenario, you can set a header,
+X-Anti-Forgery-Token. A common method for providing these values to your
+JavaScript is via meta tags in `<head>`, and query the DOM for these values.
+
+```clojure
+[:meta {:name "csrf_header :content "X-Anti-Forgery-Token"}]
+[:meta {:name "csrf_token" :content *anti-forgery-token*}]]
 ```
 
 The forgery token is also automatically added as a session parameter

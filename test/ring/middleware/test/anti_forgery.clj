@@ -75,3 +75,17 @@
                                         (assoc-in [:session "foo"] "bar"))))]
     (is (contains? session "__anti-forgery-token"))
     (is (= (session "foo") "bar"))))
+
+(deftest setting-token-via-header-test
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery (constantly response))]
+    (are [status req] (= (:status (handler req)) status)
+      403 (request :post "/")
+      403 (-> (request :post "/")
+              (assoc :headers {"x-anti-forgery-token" "foo"}))
+      403 (-> (request :post "/")
+              (assoc :session {"__anti-forgery-token" "foo"})
+              (assoc :headers {"x-anti-forgery-token" "bar"}))
+      200 (-> (request :post "/")
+              (assoc :session {"__anti-forgery-token" "foo"})
+              (assoc :headers {"x-anti-forgery-token" "foo"})))))
