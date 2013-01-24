@@ -27,6 +27,16 @@ hidden field that you can add to your forms:
 (anti-forgery-field)   ;; returns a hidden field with the anti-forgery token
 ```
 
+If you use XHR to perform requests from the client to your server, you typically
+send JSON instead of form encoded data. In this scenario, you can set a header,
+X-Anti-Forgery-Token. A common method for providing these values to your
+JavaScript is via meta tags in `<head>`, and query the DOM for these values.
+
+```clojure
+[:meta {:name "csrf_header :content "X-Anti-Forgery-Token"}]
+[:meta {:name "csrf_token" :content *anti-forgery-token*}]]
+```
+
 The forgery token is also automatically added as a session parameter
 by the middleware. If the session parameter and the POST parameter
 don't match, then a 403 Forbidden response is returned. This ensures
