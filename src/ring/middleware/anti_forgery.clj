@@ -18,12 +18,10 @@
           (assoc :session (:session request))
           (assoc-in [:session "__anti-forgery-token"] token)))))
 
-(defn- form-params [request]
-  (merge (:form-params request)
-         (:multipart-params request)))
-
 (defn get-request-token [request]
-  (-> request form-params (get "__anti-forgery-token")))
+  (or (get (:form-params request) "__anti-forgery-token")
+      (get (:multipart-params request) "__anti-forgery-token")
+      (get (:headers request)"anti-forgery-token")))
 
 (defn- secure-eql? [^String a ^String b]
   (if (and a b (= (.length a) (.length b)))

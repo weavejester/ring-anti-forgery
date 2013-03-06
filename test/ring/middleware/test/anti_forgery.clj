@@ -3,29 +3,33 @@
   (:use ring.middleware.anti-forgery
         ring.mock.request))
 
-(deftest forgery-protection-test
-  (let [response {:status 200, :headers {}, :body "Foo"}
-        handler  (wrap-anti-forgery (constantly response))]
-    (are [status req] (= (:status (handler req)) status)
-      403 (request :post "/")
-      403 (-> (request :post "/")
-              (assoc :form-params {"__anti-forgery-token" "foo"}))
-      403 (-> (request :post "/")
-              (assoc :session {"__anti-forgery-token" "foo"})
-              (assoc :form-params {"__anti-forgery-token" "bar"}))
-      200 (-> (request :post "/")
-              (assoc :session {"__anti-forgery-token" "foo"})
-              (assoc :form-params {"__anti-forgery-token" "foo"})))))
-
-(deftest multipart-form-test
-  (let [response {:status 200, :headers {}, :body "Foo"}
-        handler  (wrap-anti-forgery (constantly response))]
-    (is (= (-> (request :post "/")
-               (assoc :session {"__anti-forgery-token" "foo"})
-               (assoc :multipart-params {"__anti-forgery-token" "foo"})
-               handler
-               :status)
-           200))))
+(deftest request-token-test
+  (let [request-token-type-test (fn [set-request-token]
+    (let [response {:status 200, :headers {}, :body "Foo"}
+          handler  (wrap-anti-forgery (constantly response))]
+      (are [status req] (= status (:status (handler req)))
+        ; no token in session or request
+        403 (request :post "/")
+        ; send request token when none saved in session
+        403 (-> (request :post "/")
+                (set-request-token "foo"))
+        ; send incorrect request token
+        403 (-> (request :post "/")
+                (assoc :session {"__anti-forgery-token" "foo"})
+                (set-request-token "bar"))
+        ; send correct request token
+        200 (-> (request :post "/")
+                (assoc :session {"__anti-forgery-token" "foo"})
+                (set-request-token "foo")))))]
+    (request-token-type-test
+      (fn [request token] (assoc request
+                                 :form-params {"__anti-forgery-token" token})))
+    (request-token-type-test
+      (fn [request token] (assoc request
+                                 :multipart-params {"__anti-forgery-token" token})))
+    (request-token-type-test
+      (fn [request token] (assoc request
+                                 :headers {"anti-forgery-token" token})))))
 
 (deftest token-in-session-test
   (let [response {:status 200, :headers {}, :body "Foo"}
