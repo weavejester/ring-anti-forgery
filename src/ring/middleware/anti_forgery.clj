@@ -21,7 +21,7 @@
 (defn get-request-token [request]
   (or (get (:form-params request) "__anti-forgery-token")
       (get (:multipart-params request) "__anti-forgery-token")
-      (get (:headers request)"anti-forgery-token")))
+      (get (:headers request)"x-anti-forgery-token")))
 
 (defn- secure-eql? [^String a ^String b]
   (if (and a b (= (.length a) (.length b)))

@@ -13,5 +13,5 @@
   "Create a pair of meta elements containing the token to allow easy access
 from javasript. Uses the rails format for compatibility."
   []
-  [:meta {:name "csrf-param" :content "anti-forgery-token"}]
+  [:meta {:name "csrf-param" :content "x-anti-forgery-token"}]
   [:meta {:name "csrf-token" :content *anti-forgery-token*}])

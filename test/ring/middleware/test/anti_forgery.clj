@@ -29,7 +29,7 @@
                                  :multipart-params {"__anti-forgery-token" token})))
     (request-token-type-test
       (fn [request token] (assoc request
-                                 :headers {"anti-forgery-token" token})))))
+                                 :headers {"x-anti-forgery-token" token})))))
 
 (deftest token-in-session-test
   (let [response {:status 200, :headers {}, :body "Foo"}
