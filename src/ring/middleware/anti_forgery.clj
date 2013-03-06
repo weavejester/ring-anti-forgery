@@ -59,9 +59,9 @@
     (let [session-token (or (get-session-token request)
                              (generate-token-fn))
           request-token (get-request-token request)]
-      (if (and (post-request? request)
-               (not (valid-request? request-token session-token)))
-         (on-potential-csrf-attack request)
-         (if-let [response (binding [*anti-forgery-token* session-token]
-                             (handler request))]
-           (assoc-session-token response request session-token))))))
+      (or (and (post-request? request)
+               (not (valid-request? request-token session-token))
+               (on-potential-csrf-attack request))
+          (if-let [response (binding [*anti-forgery-token* session-token]
+                              (handler request))]
+            (assoc-session-token response request session-token))))))
