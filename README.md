@@ -1,5 +1,8 @@
 # Ring-Anti-Forgery
 
+**Warning: This fork is a shot of generalizing this library so it'll be possible
+to customize the way it handles CSRF protection. It's not yet ready!**
+
 [![Build Status](https://secure.travis-ci.org/weavejester/ring-anti-forgery.png)](http://travis-ci.org/weavejester/ring-anti-forgery)
 
 This middleware prevents [CSRF][1] attacks by providing a randomly-generated
@@ -9,7 +12,7 @@ anti-forgery token.
 
 Add the following dependency to your `project.clj`:
 
-    [ring-anti-forgery "0.2.1"]
+    [ring-anti-forgery "0.3.0-SNAPSHOT"]
 
 ## Usage
 
