@@ -83,7 +83,7 @@ Now you need to provide a custom token extractor and maybe a custom
 ;; ...
 (-> handler
     (wrap-anti-forgery {:access-denied-response access-denied-response
-                        :request-token-extractor ;; token-header-extractor})
+                        :request-token-extractor token-header-extractor})
 ;; ...
 ```
 
