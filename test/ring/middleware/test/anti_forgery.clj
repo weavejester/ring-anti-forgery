@@ -91,3 +91,20 @@
           handler (wrap-anti-forgery (constantly "some response")
                                      {:access-denied-response expected-response})]
       (is (= (handler (request :post "/")) expected-response)))))
+
+(deftest customized-request-token-extractor-test
+  (testing "valid request"
+    (let [response {:status 200, :headers {}, :body "Foo"}
+          valid-request (-> (request :post "/")
+                            (assoc :session {"__anti-forgery-token" "foo"})
+                            (update-in [:headers] assoc "x-xsrf-token" "foo"))
+          extractor #(get-in % [:headers "x-xsrf-token"])
+          handler (wrap-anti-forgery (constantly response)
+                                     {:request-token-extractor extractor})]
+      (is (= (handler valid-request) response))))
+  (testing "invalid request"
+    (let [invalid-request (request :post "/")
+          extractor #(get-in % [:headers "x-xsrf-token"])
+          handler (wrap-anti-forgery (constantly "some response")
+                                     {:request-token-extractor extractor})]
+      (is (= (:status (handler invalid-request)) 403)))))
