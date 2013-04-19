@@ -75,3 +75,19 @@
                                         (assoc-in [:session "foo"] "bar"))))]
     (is (contains? session "__anti-forgery-token"))
     (is (= (session "foo") "bar"))))
+
+(deftest access-denied-response-test
+  (let [response (access-denied-response "some body")]
+    (is (= (:status response) 403) "default status")
+    (is (= (:body response) "some body"))))
+
+(deftest wrap-anti-forgery-access-denied-response-test
+  (testing "default response"
+    (let [handler (wrap-anti-forgery (constantly "some response"))
+          expected (access-denied-response "<h1>Invalid anti-forgery token</h1>")]
+      (is (= (handler (request :post "/")) expected))))
+  (testing "custom response"
+    (let [expected-response (access-denied-response "custom body")
+          handler (wrap-anti-forgery (constantly "some response")
+                                     {:access-denied-response expected-response})]
+      (is (= (handler (request :post "/")) expected-response)))))
