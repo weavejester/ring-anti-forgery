@@ -17,6 +17,15 @@
               (assoc :session {"__anti-forgery-token" "foo"})
               (assoc :form-params {"__anti-forgery-token" "foo"})))))
 
+(deftest methods-that-require-protection
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler (wrap-anti-forgery (constantly response))]
+    (are [status req] (= (:status (handler req)) status)
+         403 (request :post "/")
+         403 (request :put "/")
+         403 (request :delete "/")
+         200 (request :get "/"))))
+
 (deftest multipart-form-test
   (let [response {:status 200, :headers {}, :body "Foo"}
         handler  (wrap-anti-forgery (constantly response))]

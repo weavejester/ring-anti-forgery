@@ -16,10 +16,13 @@ Add the following dependency to your `project.clj`:
 
 ## Usage
 
-When a handler is wrapped in the `wrap-anti-forgery` middleware, a randomly-
-generated string is assigned to the `*anti-forgery-token*` var. This token must
-be included as a parameter named "__anti-forgery-token" for all POST requests
-to the handler.
+### Default Behavior
+
+When a handler is wrapped in the `wrap-anti-forgery` middleware, a
+randomly- generated string is assigned to the `*anti-forgery-token*`
+var. This token must be included as a parameter named
+"__anti-forgery-token" for all POST/PUT/DELETE requests to the
+handler.
 
 The ring-anti-forgery middleware includes a function to create a
 hidden field that you can add to your forms:

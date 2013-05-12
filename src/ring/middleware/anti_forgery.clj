@@ -43,8 +43,8 @@
          stored-token
          (secure-eql? request-token stored-token))))
 
-(defn- post-request? [request]
-  (= :post (:request-method request)))
+(defn- require-protection? [request]
+  (some (hash-set (:request-method request)) [:post :put :delete]))
 
 (defn access-denied-response
   "Produces an access-denied response with text/html content type, 403 status
@@ -85,7 +85,7 @@
      (let [opts (merge defaults options)]
        (fn [request]
          (binding [*anti-forgery-token* (session-token request)]
-           (if (and (post-request? request)
+           (if (and (require-protection? request)
                     (not (valid-request? request (:request-token-extractor opts))))
              (:access-denied-response opts)
              (if-let [response (handler request)]
