@@ -78,7 +78,7 @@ Now you need to provide a custom token extractor and maybe a custom
    :headers {"Content-Type" "application/json; charset=utf-8"}
    :body "{\"error\": \"invalid token\"}"})
 
-(def token-header-extractor [request]
+(defn token-header-extractor [request]
   (if-let [token (get-in request [:headers "x-xsrf-token"])]
     (url-decode token)))
 
