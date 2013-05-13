@@ -17,6 +17,15 @@
               (assoc :session {"__anti-forgery-token" "foo"})
               (assoc :form-params {"__anti-forgery-token" "foo"})))))
 
+(deftest methods-that-require-protection
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler (wrap-anti-forgery (constantly response))]
+    (are [status req] (= (:status (handler req)) status)
+         403 (request :post "/")
+         403 (request :put "/")
+         403 (request :delete "/")
+         200 (request :get "/"))))
+
 (deftest multipart-form-test
   (let [response {:status 200, :headers {}, :body "Foo"}
         handler  (wrap-anti-forgery (constantly response))]
@@ -75,3 +84,36 @@
                                         (assoc-in [:session "foo"] "bar"))))]
     (is (contains? session "__anti-forgery-token"))
     (is (= (session "foo") "bar"))))
+
+(deftest access-denied-response-test
+  (let [response (access-denied-response "some body")]
+    (is (= (:status response) 403) "default status")
+    (is (= (:body response) "some body"))))
+
+(deftest wrap-anti-forgery-access-denied-response-test
+  (testing "default response"
+    (let [handler (wrap-anti-forgery (constantly "some response"))
+          expected (access-denied-response "<h1>Invalid anti-forgery token</h1>")]
+      (is (= (handler (request :post "/")) expected))))
+  (testing "custom response"
+    (let [expected-response (access-denied-response "custom body")
+          handler (wrap-anti-forgery (constantly "some response")
+                                     {:access-denied-response expected-response})]
+      (is (= (handler (request :post "/")) expected-response)))))
+
+(deftest customized-request-token-extractor-test
+  (testing "valid request"
+    (let [response {:status 200, :headers {}, :body "Foo"}
+          valid-request (-> (request :post "/")
+                            (assoc :session {"__anti-forgery-token" "foo"})
+                            (update-in [:headers] assoc "x-xsrf-token" "foo"))
+          extractor #(get-in % [:headers "x-xsrf-token"])
+          handler (wrap-anti-forgery (constantly response)
+                                     {:request-token-extractor extractor})]
+      (is (= (handler valid-request) response))))
+  (testing "invalid request"
+    (let [invalid-request (request :post "/")
+          extractor #(get-in % [:headers "x-xsrf-token"])
+          handler (wrap-anti-forgery (constantly "some response")
+                                     {:request-token-extractor extractor})]
+      (is (= (:status (handler invalid-request)) 403)))))
