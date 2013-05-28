@@ -3,7 +3,7 @@
   :url "https://github.com/weavejester/ring-anti-forgery"
   :license {:name "The MIT License"
             :url "http://opensource.org/licenses/MIT"}
-  :dependencies [[org.clojure/clojure "1.2.1"]
+  :dependencies [[org.clojure/clojure "1.5.1"]
                  [crypto-random "1.1.0"]
                  [hiccup "1.0.0"]]
   :profiles
