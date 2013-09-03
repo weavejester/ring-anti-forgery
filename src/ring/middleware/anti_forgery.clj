@@ -36,8 +36,9 @@
          stored-token
          (secure-eql? param-token stored-token))))
 
-(defn- post-request? [request]
-  (= :post (:request-method request)))
+(defn- get-request? [{method :request-method}]
+  (or (= :head method)
+      (= :get method)))
 
 (defn- access-denied [body]
   {:status 403
@@ -52,7 +53,7 @@
   [handler]
   (fn [request]
     (binding [*anti-forgery-token* (session-token request)]
-      (if (and (post-request? request) (not (valid-request? request)))
+      (if (and (not (get-request? request)) (not (valid-request? request)))
         (access-denied "<h1>Invalid anti-forgery token</h1>")
         (if-let [response (handler request)]
           (assoc-session-token response request *anti-forgery-token*))))))
