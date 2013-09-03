@@ -5,6 +5,8 @@
 This middleware prevents [CSRF][1] attacks by providing a randomly-generated
 anti-forgery token.
 
+[1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
+
 ## Install
 
 Add the following dependency to your `project.clj`:
@@ -13,32 +15,62 @@ Add the following dependency to your `project.clj`:
 
 ## Usage
 
-When a handler is wrapped in the `wrap-anti-forgery` middleware, a randomly-
-generated string is assigned to the `*anti-forgery-token*` var. This token must
-be included as a parameter named "__anti-forgery-token" for all POST requests
-to the handler.
+Apply the `wrap-anti-forgery` middleware to your Ring handler:
 
-The ring-anti-forgery middleware includes a function to create a
-hidden field that you can add to your forms:
+```clojure
+(use 'ring.middleware.anti-forgery)
+
+(def app
+  (wrap-anti-forgery handler))
+```
+
+Any request that isn't a `HEAD` or `GET` request will now require an
+anti-forgery token, or an "access denied" response will be returned.
+The token is bound to the session, and accessible via the
+`*anti-forgery-token*` var.
+
+By default the middleware looks for the anti-forgery token in the
+`__anti-forgery-token` form parameter, which can be added to your
+forms as a hidden field. For convenience, this library provides a
+function to generate the HTML of that hidden field:
 
 ```clojure
 (use 'ring.util.anti-forgery)
 
-(anti-forgery-field)   ;; returns a hidden field with the anti-forgery token
+(anti-forgery-field)  ;; returns the HTML for the anti-forgery field
 ```
 
-The forgery token is also automatically added as a session parameter
-by the middleware. If the session parameter and the POST parameter
-don't match, then a 403 Forbidden response is returned. This ensures
-that requests cannot be POSTed from other domains.
+The middleware also looks for the token in the `X-CSRF-Token` and
+`X-XSRF-Token` header fields. This behavior can be customized further
+using the `:read-token` option:
+
+```clojure
+(defn get-custom-token [request]
+  (get-in request [:headers "x-forgery-token"]))
+
+(def app
+  (wrap-anti-forgery handler {:read-token get-custom-token}))
+```
+
+It's also possible to customize the error response returned when the
+token is invalid or missing:
+
+```clojure
+(def custom-error-response
+  {:status 403
+   :headers {"Content-Type" "text/html"}
+   :body "<h1>Missing anti-forgery token</h1>"})
+
+(def app
+  (wrap-anti-forgery-token handler {:error-response custom-error-response}))
+```
 
 ## Caveats
 
-The anti-forgery middleware will prevent POSTs working for web service routes,
-so you should only apply this middleware to the part of your website meant
-for browsers.
-
-[1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
+The anti-forgery middleware will prevent POSTs, PUTs, PATCHes, and
+DELETEs, working for web service routes, so you should only apply this
+middleware to the part of your website meant to be accessed by
+browsers.
 
 ## License
 
