@@ -1,6 +1,6 @@
 (ns ring.middleware.test.anti-forgery
-  (:use clojure.test :reload)
-  (:use ring.middleware.anti-forgery
+  (:use clojure.test
+        ring.middleware.anti-forgery
         ring.mock.request))
 
 (deftest forgery-protection-test
