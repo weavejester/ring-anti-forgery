@@ -46,10 +46,14 @@
    :body body})
 
 (defn wrap-anti-forgery
-  "Middleware that prevents CSRF attacks. Any POST request to this handler must
-  contain a '__anti-forgery-token' parameter equal to the last value of the
-  *anti-request-forgery* var. If the token is missing or incorrect, an access-
-  denied response is returned."
+  "Middleware that prevents CSRF attacks. Any POST request to the handler
+  returned by this function must contain a valid anti-forgery token, or else an
+  access-denied response is returned.
+
+  The anti-forgery token can be placed into a HTML page via the
+  *anti-forgery-token* var, which is bound to a random key unique to the
+  current session. The token should be included in a form field named
+  '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token' headers."
   [handler]
   (fn [request]
     (binding [*anti-forgery-token* (session-token request)]
