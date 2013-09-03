@@ -24,13 +24,13 @@
   (merge (:form-params request)
          (:multipart-params request)))
 
-(defn- request-token [request]
+(defn- default-request-token [request]
   (or (-> request form-params (get "__anti-forgery-token"))
       (-> request :headers (get "x-csrf-token"))
       (-> request :headers (get "x-xsrf-token"))))
 
-(defn- valid-request? [request]
-  (let [user-token   (request-token request)
+(defn- valid-request? [request read-token]
+  (let [user-token   (read-token request)
         stored-token (session-token request)]
     (and user-token
          stored-token
@@ -52,12 +52,21 @@
 
   The anti-forgery token can be placed into a HTML page via the
   *anti-forgery-token* var, which is bound to a random key unique to the
-  current session. The token should be included in a form field named
-  '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token' headers."
-  [handler]
+  current session. By default, the token is expected to be in a form field
+  named '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token'
+  headers.
+
+  This behavior can be customized by supplying a map of options:
+    :read-token
+      a function that takes a request and returns an anti-forgery token, or nil
+      if the token does not exist.
+    :error-response
+      the response to return if the anti-forgery token is incorrect or missing."
+  [handler & [{:as options}]]
   (fn [request]
     (binding [*anti-forgery-token* (session-token request)]
-      (if (and (not (get-request? request)) (not (valid-request? request)))
-        (access-denied "<h1>Invalid anti-forgery token</h1>")
+      (if (and (not (get-request? request))
+               (not (valid-request? request (:read-token options default-request-token))))
+        (:error-response options (access-denied "<h1>Invalid anti-forgery token</h1>"))
         (if-let [response (handler request)]
           (assoc-session-token response request *anti-forgery-token*))))))

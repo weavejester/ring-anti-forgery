@@ -94,3 +94,26 @@
                                         (assoc-in [:session "foo"] "bar"))))]
     (is (contains? session "__anti-forgery-token"))
     (is (= (session "foo") "bar"))))
+
+(deftest custom-error-response-test
+  (let [response   {:status 200, :headers {}, :body "Foo"}
+        error-resp {:statis 500, :headers {}, :body "Bar"}
+        handler    (wrap-anti-forgery (constantly response)
+                                      {:error-response error-resp})]
+    (is (= (dissoc (handler (request :get "/")) :session)
+           response))
+    (is (= (dissoc (handler (request :post "/")) :session)
+           error-resp))))
+
+(deftest custom-read-token-test
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery
+                  (constantly response)
+                  {:read-token #(get-in % [:headers "x-forgery-token"])})
+        req      (-> (request :post "/")
+                     (assoc :session {"__anti-forgery-token" "foo"})
+                     (assoc :headers {"x-forgery-token" "foo"}))]
+    (is (= (:status (handler req))
+           200))
+    (is (= (:status (handler (assoc req :headers {"x-csrf-token" "foo"})))
+           403))))
