@@ -27,6 +27,15 @@
       403 (request :patch "/")
       403 (request :delete "/"))))
 
+(deftest csrf-header-test
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery (constantly response))
+        sess-req (-> (request :post "/")
+                     (assoc :session {"__anti-forgery-token" "foo"}))]
+    (are [status req] (= (:status (handler req)) status)
+      200 (assoc sess-req :headers {"x-csrf-token" "foo"})
+      200 (assoc sess-req :headers {"x-xsrf-token" "foo"}))))
+
 (deftest multipart-form-test
   (let [response {:status 200, :headers {}, :body "Foo"}
         handler  (wrap-anti-forgery (constantly response))]

@@ -24,12 +24,17 @@
   (merge (:form-params request)
          (:multipart-params request)))
 
+(defn- request-token [request]
+  (or (-> request form-params (get "__anti-forgery-token"))
+      (-> request :headers (get "x-csrf-token"))
+      (-> request :headers (get "x-xsrf-token"))))
+
 (defn- valid-request? [request]
-  (let [param-token  (-> request form-params (get "__anti-forgery-token"))
+  (let [user-token   (request-token request)
         stored-token (session-token request)]
-    (and param-token
+    (and user-token
          stored-token
-         (crypto/eq? param-token stored-token))))
+         (crypto/eq? user-token stored-token))))
 
 (defn- get-request? [{method :request-method}]
   (or (= :head method)
