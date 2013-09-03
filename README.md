@@ -42,6 +42,6 @@ for browsers.
 
 ## License
 
-Copyright © 2012 James Reeves
+Copyright © 2013 James Reeves
 
 Distributed under the MIT License.
