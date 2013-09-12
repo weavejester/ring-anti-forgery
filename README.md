@@ -62,7 +62,7 @@ token is invalid or missing:
    :body "<h1>Missing anti-forgery token</h1>"})
 
 (def app
-  (wrap-anti-forgery-token handler {:error-response custom-error-response}))
+  (wrap-anti-forgery handler {:error-response custom-error-response}))
 ```
 
 ## Caveats
