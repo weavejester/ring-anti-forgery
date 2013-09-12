@@ -15,13 +15,17 @@ Add the following dependency to your `project.clj`:
 
 ## Usage
 
-Apply the `wrap-anti-forgery` middleware to your Ring handler:
+Apply the `wrap-anti-forgery` middleware to your Ring handler, along
+with the standard `wrap-session` middleware supplied in Ring core:
 
 ```clojure
-(use 'ring.middleware.anti-forgery)
+(use 'ring.middleware.anti-forgery
+     'ring.middleware.session)
 
 (def app
-  (wrap-anti-forgery handler))
+  (-> handler
+      wrap-anti-forgery
+      wrap-session))
 ```
 
 Any request that isn't a `HEAD` or `GET` request will now require an
@@ -49,7 +53,9 @@ using the `:read-token` option:
   (get-in request [:headers "x-forgery-token"]))
 
 (def app
-  (wrap-anti-forgery handler {:read-token get-custom-token}))
+  (-> handler
+      (wrap-anti-forgery {:read-token get-custom-token})
+      (wrap-session)))
 ```
 
 It's also possible to customize the error response returned when the
@@ -62,7 +68,9 @@ token is invalid or missing:
    :body "<h1>Missing anti-forgery token</h1>"})
 
 (def app
-  (wrap-anti-forgery handler {:error-response custom-error-response}))
+  (-> handler
+      (wrap-anti-forgery {:error-response custom-error-response})
+      (wrap-session)))
 ```
 
 ## Caveats
