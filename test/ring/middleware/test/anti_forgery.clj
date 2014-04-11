@@ -97,13 +97,30 @@
 
 (deftest custom-error-response-test
   (let [response   {:status 200, :headers {}, :body "Foo"}
-        error-resp {:statis 500, :headers {}, :body "Bar"}
+        error-resp {:status 500, :headers {}, :body "Bar"}
         handler    (wrap-anti-forgery (constantly response)
                                       {:error-response error-resp})]
     (is (= (dissoc (handler (request :get "/")) :session)
            response))
     (is (= (dissoc (handler (request :post "/")) :session)
            error-resp))))
+
+(deftest custom-error-handler-test
+  (let [response   {:status 200, :headers {}, :body "Foo"}
+        error-resp {:status 500, :headers {}, :body "Bar"}
+        handler    (wrap-anti-forgery (constantly response)
+                                      {:error-handler (fn [request] error-resp)})]
+    (is (= (dissoc (handler (request :get "/")) :session)
+           response))
+    (is (= (dissoc (handler (request :post "/")) :session)
+           error-resp))))
+
+(deftest disallow-both-error-response-and-error-handler
+  (is (thrown?
+        AssertionError
+        (wrap-anti-forgery (constantly {:status 200})
+                           {:error-handler (fn [request] {:status 500 :body "Handler"})
+                            :error-response {:status 500 :body "Response"}}))))
 
 (deftest custom-read-token-test
   (let [response {:status 200, :headers {}, :body "Foo"}

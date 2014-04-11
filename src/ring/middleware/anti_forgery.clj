@@ -45,6 +45,12 @@
    :headers {"Content-Type" "text/html"}
    :body body})
 
+(defn- handle-error [options request]
+  (let [default-error-response (access-denied "<h1>Invalid anti-forgery token</h1>")
+        error-response (:error-response options default-error-response)
+        error-handler (:error-handler options (fn [request] error-response))]
+    (error-handler request)))
+
 (defn wrap-anti-forgery
   "Middleware that prevents CSRF attacks. Any POST request to the handler
   returned by this function must contain a valid anti-forgery token, or else an
@@ -61,12 +67,19 @@
       a function that takes a request and returns an anti-forgery token, or nil
       if the token does not exist.
     :error-response
-      the response to return if the anti-forgery token is incorrect or missing."
+      the response to return if the anti-forgery token is incorrect or missing.
+    :error-handler
+      a handler function to call if the anti-forgery token is incorrect or
+      missing.
+
+  Only one of :error-response, :error-handler may be specified."
   [handler & [{:as options}]]
+  {:pre [(not (and (:error-response options)
+                   (:error-handler options)))]}
   (fn [request]
     (binding [*anti-forgery-token* (session-token request)]
       (if (and (not (get-request? request))
                (not (valid-request? request (:read-token options default-request-token))))
-        (:error-response options (access-denied "<h1>Invalid anti-forgery token</h1>"))
+        (handle-error options request)
         (if-let [response (handler request)]
           (assoc-session-token response request *anti-forgery-token*))))))
