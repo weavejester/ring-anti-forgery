@@ -73,6 +73,20 @@ token is invalid or missing:
       (wrap-session)))
 ```
 
+Or, for more control, an error handler:
+
+```clojure
+(defn custom-error-handler [request]
+  {:status 403
+   :headers {"Content-Type" "text/html"}
+   :body "<h1>Missing anti-forgery token</h1>"})
+
+(def app
+  (-> handler
+      (wrap-anti-forgery {:error-handler custom-error-handler})
+      (wrap-session)))
+```
+
 ## Caveats
 
 The anti-forgery middleware will prevent POSTs, PUTs, PATCHes, and
