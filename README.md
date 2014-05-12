@@ -11,7 +11,7 @@ anti-forgery token.
 
 Add the following dependency to your `project.clj`:
 
-    [ring/ring-anti-forgery "0.3.1"]
+    [ring/ring-anti-forgery "0.3.2"]
 
 ## Usage
 
