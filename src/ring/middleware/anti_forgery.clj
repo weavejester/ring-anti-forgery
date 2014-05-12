@@ -3,9 +3,9 @@
   (:require [crypto.random :as random]
             [crypto.equality :as crypto]))
 
-(def ^:dynamic
-  ^{:doc "Binding that stores a anti-forgery token that must be included
-          in POST forms if the handler is wrapped in wrap-anti-forgery."}
+(def ^{:doc "Binding that stores a anti-forgery token that must be included
+            in POST forms if the handler is wrapped in wrap-anti-forgery."
+       :dynamic true}
   *anti-forgery-token*)
 
 (defn- session-token [request]
