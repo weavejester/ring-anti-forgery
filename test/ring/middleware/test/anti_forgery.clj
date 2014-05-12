@@ -95,6 +95,13 @@
     (is (contains? session "__anti-forgery-token"))
     (is (= (session "foo") "bar"))))
 
+(deftest session-response-test
+  (let [response {:status 200 :headers {} :session {"foo" "bar"} :body nil}
+        handler  (wrap-anti-forgery (constantly response))
+        session  (:session (handler (request :get "/")))]
+    (is (contains? session "__anti-forgery-token"))
+    (is (= (session "foo") "bar"))))
+
 (deftest custom-error-response-test
   (let [response   {:status 200, :headers {}, :body "Foo"}
         error-resp {:status 500, :headers {}, :body "Bar"}

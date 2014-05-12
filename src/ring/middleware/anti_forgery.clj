@@ -17,7 +17,7 @@
     (if (= old-token token)
       response
       (-> response
-          (assoc :session (:session request))
+          (assoc :session (:session response (:session request)))
           (assoc-in [:session "__anti-forgery-token"] token)))))
 
 (defn- form-params [request]
