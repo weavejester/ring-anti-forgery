@@ -62,15 +62,16 @@
   named '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token'
   headers.
 
-  This behavior can be customized by supplying a map of options:
-    :read-token
-      a function that takes a request and returns an anti-forgery token, or nil
-      if the token does not exist.
-    :error-response
-      the response to return if the anti-forgery token is incorrect or missing.
-    :error-handler
-      a handler function to call if the anti-forgery token is incorrect or
-      missing.
+  Accepts the following options:
+
+  :read-token     - a function that takes a request and returns an anti-forgery
+                    token, or nil if the token does not exist
+
+  :error-response - the response to return if the anti-forgery token is
+                    incorrect or missing
+
+  :error-handler  - a handler function to call if the anti-forgery token is
+                    incorrect or missing.
 
   Only one of :error-response, :error-handler may be specified."
   [handler & [{:as options}]]
