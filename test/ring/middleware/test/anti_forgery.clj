@@ -141,3 +141,10 @@
            200))
     (is (= (:status (handler (assoc req :headers {"x-csrf-token" "foo"})))
            403))))
+
+(deftest random-tokens-test
+  (let [handler      (fn [_] {:status 200, :headers {}, :body *anti-forgery-token*})
+        get-response (fn [] ((wrap-anti-forgery handler) (request :get "/")))
+        tokens       (map :body (repeatedly 1000 get-response))]
+    (is (every? #(re-matches #"[A-Za-z0-9+/]{80}" %) tokens))
+    (is (= (count tokens) (count (set tokens))))))
