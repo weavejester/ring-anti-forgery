@@ -3,17 +3,19 @@
   (:require [crypto.random :as random]
             [crypto.equality :as crypto]))
 
-(def ^{:doc "Binding that stores a anti-forgery token that must be included
+(def ^{:doc "Binding that stores an anti-forgery token that must be included
             in POST forms if the handler is wrapped in wrap-anti-forgery."
        :dynamic true}
   *anti-forgery-token*)
 
+(defn- new-token []
+  (random/base64 60))
+
 (defn- session-token [request]
-  (or (get-in request [:session "__anti-forgery-token"])
-      (random/base64 60)))
+  (get-in request [:session "__anti-forgery-token"]))
 
 (defn- assoc-session-token [response request token]
-  (let [old-token (get-in request [:session "__anti-forgery-token"])]
+  (let [old-token (session-token request)]
     (if (= old-token token)
       response
       (-> response
@@ -37,18 +39,18 @@
          (crypto/eq? user-token stored-token))))
 
 (defn- get-request? [{method :request-method}]
-  (or (= :head method)
-      (= :get method)))
+  (or (= method :head)
+      (= method :get)))
 
 (defn- access-denied [body]
-  {:status 403
+  {:status  403
    :headers {"Content-Type" "text/html"}
-   :body body})
+   :body    body})
 
 (defn- handle-error [options request]
-  (let [default-error-response (access-denied "<h1>Invalid anti-forgery token</h1>")
-        error-response (:error-response options default-error-response)
-        error-handler (:error-handler options (fn [request] error-response))]
+  (let [default-response (access-denied "<h1>Invalid anti-forgery token</h1>")
+        error-response   (:error-response options default-response)
+        error-handler    (:error-handler options (constantly error-response))]
     (error-handler request)))
 
 (defn wrap-anti-forgery
@@ -74,13 +76,15 @@
                     incorrect or missing.
 
   Only one of :error-response, :error-handler may be specified."
-  [handler & [{:as options}]]
+  [handler & [{:keys [read-token]
+               :or   {read-token default-request-token}
+               :as   options}]]
   {:pre [(not (and (:error-response options)
                    (:error-handler options)))]}
   (fn [request]
-    (binding [*anti-forgery-token* (session-token request)]
+    (binding [*anti-forgery-token* (or (session-token request) (new-token))]
       (if (and (not (get-request? request))
-               (not (valid-request? request (:read-token options default-request-token))))
+               (not (valid-request? request read-token)))
         (handle-error options request)
         (if-let [response (handler request)]
           (assoc-session-token response request *anti-forgery-token*))))))
