@@ -1,4 +1,5 @@
 (ns ring.util.anti-forgery
+  "Utility functions for inserting anti-forgery tokens into HTML forms."
   (:use [hiccup core form]
         ring.middleware.anti-forgery))
 

@@ -76,6 +76,7 @@
                     incorrect or missing.
 
   Only one of :error-response, :error-handler may be specified."
+  {:arglists '([handler] [handler options])}
   [handler & [{:keys [read-token]
                :or   {read-token default-request-token}
                :as   options}]]
