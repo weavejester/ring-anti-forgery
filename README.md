@@ -2,8 +2,8 @@
 
 [![Build Status](https://secure.travis-ci.org/ring-clojure/ring-anti-forgery.png)](http://travis-ci.org/ring-clojure/ring-anti-forgery)
 
-This middleware prevents [CSRF][1] attacks by providing a randomly-generated
-anti-forgery token.
+Ring middleware that prevents [CSRF][1] attacks by via a
+randomly-generated anti-forgery token.
 
 [1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
 
@@ -15,8 +15,8 @@ Add the following dependency to your `project.clj`:
 
 ## Usage
 
-Apply the `wrap-anti-forgery` middleware to your Ring handler, along
-with the standard `wrap-session` middleware supplied in Ring core:
+The `wrap-anti-forgery` middleware should be applied to your Ring
+handler, inside of the standard `wrap-session` middleware in Ring:
 
 ```clojure
 (use 'ring.middleware.anti-forgery
@@ -45,8 +45,12 @@ function to generate the HTML of that hidden field:
 ```
 
 The middleware also looks for the token in the `X-CSRF-Token` and
-`X-XSRF-Token` header fields. This behavior can be customized further
-using the `:read-token` option:
+`X-XSRF-Token` header fields, which are commonly used in AJAX
+requests.
+
+This behavior can be customized further by supplying a function to the
+`:read-token` option. This function is passed the request map, and
+should return the anti-forgery token found in the request.
 
 ```clojure
 (defn get-custom-token [request]
@@ -73,7 +77,7 @@ token is invalid or missing:
       (wrap-session)))
 ```
 
-Or, for more control, an error handler:
+Or, for more control, an error handler can be supplied:
 
 ```clojure
 (defn custom-error-handler [request]
@@ -89,10 +93,13 @@ Or, for more control, an error handler:
 
 ## Caveats
 
-The anti-forgery middleware will prevent POSTs, PUTs, PATCHes, and
-DELETEs, working for web service routes, so you should only apply this
-middleware to the part of your website meant to be accessed by
-browsers.
+This middleware will prevent all HTTP methods except for GET and HEAD
+from accessing your handler without an anti-forgery token that matches
+the one in the current session.
+
+You should therefore only apply this middleware to the parts of your
+application designed to be accessed through a web browser. This
+middleware should not be applied to handlers that define web services.
 
 ## License
 
