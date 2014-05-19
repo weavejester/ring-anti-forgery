@@ -12,7 +12,7 @@
   (random/base64 60))
 
 (defn- session-token [request]
-  (get-in request [:session "__anti-forgery-token"]))
+  (get-in request [:session ::anti-forgery-token]))
 
 (defn- assoc-session-token [response request token]
   (let [old-token (session-token request)]
@@ -20,7 +20,7 @@
       response
       (-> response
           (assoc :session (:session response (:session request)))
-          (assoc-in [:session "__anti-forgery-token"] token)))))
+          (assoc-in [:session ::anti-forgery-token] token)))))
 
 (defn- form-params [request]
   (merge (:form-params request)
