@@ -23,6 +23,7 @@
     (are [status req] (= (:status (handler req)) status)
       200 (request :head "/")
       200 (request :get "/")
+      200 (request :options "/")
       403 (request :post "/")
       403 (request :put "/")
       403 (request :patch "/")
