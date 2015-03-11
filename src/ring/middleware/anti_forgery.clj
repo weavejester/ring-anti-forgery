@@ -40,7 +40,8 @@
 
 (defn- get-request? [{method :request-method}]
   (or (= method :head)
-      (= method :get)))
+      (= method :get)
+      (= method :options)))
 
 (defn- access-denied [body]
   {:status  403
