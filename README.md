@@ -11,7 +11,7 @@ randomly-generated anti-forgery token.
 
 Add the following dependency to your `project.clj`:
 
-    [ring/ring-anti-forgery "1.0.0"]
+    [ring/ring-anti-forgery "1.0.1"]
 
 ## Usage
 
