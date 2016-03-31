@@ -1,6 +1,6 @@
 # Ring-Anti-Forgery
 
-[![Build Status](https://secure.travis-ci.org/ring-clojure/ring-anti-forgery.png)](http://travis-ci.org/ring-clojure/ring-anti-forgery)
+[![Build Status](https://travis-ci.org/ring-clojure/ring-anti-forgery.svg?branch=master)](https://travis-ci.org/ring-clojure/ring-anti-forgery)
 
 Ring middleware that prevents [CSRF][1] attacks by via a
 randomly-generated anti-forgery token.
