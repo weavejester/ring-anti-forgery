@@ -7,7 +7,6 @@
                  [crypto-random "1.2.0"]
                  [crypto-equality "1.0.0"]
                  [hiccup "1.0.5"]]
-  :plugins [[codox "0.8.5"]]
   :aliases {"test-all" ["with-profile" "default:+1.4:+1.5:+1.6:+1.7:+1.8" "test"]}
   :profiles
   {:dev {:dependencies [[ring-mock "0.1.5"]]}
