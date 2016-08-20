@@ -14,13 +14,17 @@
 (defn- session-token [request]
   (get-in request [:session ::anti-forgery-token]))
 
-(defn- assoc-session-token [response request token]
-  (let [old-token (session-token request)]
-    (if (= old-token token)
-      response
-      (-> response
-          (assoc :session (:session response (:session request)))
-          (assoc-in [:session ::anti-forgery-token] token)))))
+(defn- find-or-create-token [request]
+  (or (session-token request) (new-token)))
+
+(defn- add-session-token [response request token]
+  (if response
+    (let [old-token (session-token request)]
+      (if (= old-token token)
+        response
+        (-> response
+            (assoc :session (:session response (:session request)))
+            (assoc-in [:session ::anti-forgery-token] token))))))
 
 (defn- form-params [request]
   (merge (:form-params request)
@@ -31,7 +35,7 @@
       (-> request :headers (get "x-csrf-token"))
       (-> request :headers (get "x-xsrf-token"))))
 
-(defn- valid-request? [request read-token]
+(defn- valid-token? [request read-token]
   (let [user-token   (read-token request)
         stored-token (session-token request)]
     (and user-token
@@ -43,16 +47,23 @@
       (= method :get)
       (= method :options)))
 
-(defn- access-denied [body]
+(defn- valid-request? [request read-token]
+  (and (not (get-request? request))
+       (not (valid-token? request read-token))))
+
+(def ^:private default-error-response
   {:status  403
    :headers {"Content-Type" "text/html"}
-   :body    body})
+   :body    "<h1>Invalid anti-forgery token</h1>"})
 
-(defn- handle-error [options request]
-  (let [default-response (access-denied "<h1>Invalid anti-forgery token</h1>")
-        error-response   (:error-response options default-response)
-        error-handler    (:error-handler options (constantly error-response))]
-    (error-handler request)))
+(defn- constant-handler [response]
+  (fn
+    ([_] response)
+    ([_ respond _] (respond response))))
+
+(defn- make-error-handler [options]
+  (or (:error-handler options)
+      (constant-handler (:error-response options default-error-response))))
 
 (defn wrap-anti-forgery
   "Middleware that prevents CSRF attacks. Any POST request to the handler
@@ -77,16 +88,22 @@
                     incorrect or missing.
 
   Only one of :error-response, :error-handler may be specified."
-  {:arglists '([handler] [handler options])}
-  [handler & [{:keys [read-token]
-               :or   {read-token default-request-token}
-               :as   options}]]
-  {:pre [(not (and (:error-response options)
-                   (:error-handler options)))]}
-  (fn [request]
-    (binding [*anti-forgery-token* (or (session-token request) (new-token))]
-      (if (and (not (get-request? request))
-               (not (valid-request? request read-token)))
-        (handle-error options request)
-        (if-let [response (handler request)]
-          (assoc-session-token response request *anti-forgery-token*))))))
+  ([handler]
+   (wrap-anti-forgery handler {}))
+  ([handler options]
+   {:pre [(not (and (:error-response options) (:error-handler options)))]}
+   (let [read-token    (:read-token options default-request-token)
+         error-handler (make-error-handler options)]
+     (fn
+       ([request]
+        (let [token (find-or-create-token request)]
+          (binding [*anti-forgery-token* token]
+            (if (valid-request? request read-token)
+              (error-handler request)
+              (add-session-token (handler request) request token)))))
+       ([request respond raise]
+        (let [token (find-or-create-token request)]
+          (binding [*anti-forgery-token* token]
+            (if (valid-request? request read-token)
+              (error-handler request respond raise)
+              (handler request #(respond (add-session-token % request token)) raise)))))))))

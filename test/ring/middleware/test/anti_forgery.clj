@@ -150,3 +150,26 @@
         tokens       (map :body (repeatedly 1000 get-response))]
     (is (every? #(re-matches #"[A-Za-z0-9+/]{80}" %) tokens))
     (is (= (count tokens) (count (set tokens))))))
+
+(deftest forgery-protection-cps-test
+  (let [response {:status 200, :headers {}, :body "Foo"}
+        handler  (wrap-anti-forgery (fn [_ respond _] (respond response)))]
+
+    (testing "missing token"
+      (let [req  (-> (request :post "/")
+                     (assoc :form-params {"__anti-forgery-token" "foo"}))
+            resp (promise)
+            ex   (promise)]
+        (handler req resp ex)
+        (is (not (realized? ex)))
+        (is (= (:status @resp) 403))))
+
+    (testing "valid token"
+      (let [req  (-> (request :post "/")
+                     (assoc :session {::af/anti-forgery-token "foo"})
+                     (assoc :form-params {"__anti-forgery-token" "foo"}))
+            resp (promise)
+            ex   (promise)]
+        (handler req resp ex)
+        (is (not (realized? ex)))
+        (is (= (:status @resp) 200))))))
