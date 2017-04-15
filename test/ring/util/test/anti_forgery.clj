@@ -8,3 +8,12 @@
     (is (= (anti-forgery-field)
            (str "<input id=\"__anti-forgery-token\" name=\"__anti-forgery-token\""
                 " type=\"hidden\" value=\"abc\" />")))))
+
+(deftest script-token-test
+  (binding [*anti-forgery-token* "abc"]
+    (is (= (script-token)
+           (str "<script type=\"text/javascript\">//<![CDATA[\n"
+                "CSRF_TOKEN = \"abc\";\n//]]></script>")))
+    (is (= (script-token "otherName")
+           (str "<script type=\"text/javascript\">//<![CDATA[\n"
+                "otherName = \"abc\";\n//]]></script>")))))
