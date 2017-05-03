@@ -103,6 +103,6 @@ middleware should not be applied to handlers that define web services.
 
 ## License
 
-Copyright © 2016 James Reeves
+Copyright © 2017 James Reeves
 
 Distributed under the MIT License, the same as Ring.
