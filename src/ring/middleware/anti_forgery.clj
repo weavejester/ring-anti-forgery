@@ -48,8 +48,8 @@
       (= method :options)))
 
 (defn- valid-request? [request read-token]
-  (and (not (get-request? request))
-       (not (valid-token? request read-token))))
+  (or (get-request? request)
+      (valid-token? request read-token)))
 
 (def ^:private default-error-response
   {:status  403
@@ -99,11 +99,11 @@
         (let [token (find-or-create-token request)]
           (binding [*anti-forgery-token* token]
             (if (valid-request? request read-token)
-              (error-handler request)
-              (add-session-token (handler request) request token)))))
+              (add-session-token (handler request) request token)
+              (error-handler request)))))
        ([request respond raise]
         (let [token (find-or-create-token request)]
           (binding [*anti-forgery-token* token]
             (if (valid-request? request read-token)
-              (error-handler request respond raise)
-              (handler request #(respond (add-session-token % request token)) raise)))))))))
+              (handler request #(respond (add-session-token % request token)) raise)
+              (error-handler request respond raise)))))))))
