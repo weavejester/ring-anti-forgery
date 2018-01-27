@@ -1,25 +1,15 @@
 (ns ring.middleware.anti-forgery.strategy)
 
 (defprotocol Strategy
-  "CSRF protection is based on the fact, that some state is embedded
-  in the client webpage (e.g. as hidden form field)
-  and the server is able to validate that state.
-
-  OWASP documents a number of patterns how to create and validate that state
-  in the form of a 'token', each with its own advantages and disadvantages.
-
-  Strategy is the protocol to abstract the process
-  of token creation and validation."
-  (get-token [strategy request]
-    "Returns a token to be used. Users of ring.middleware.anti-forgery should
-     use the appropriate utility functions from `ring.util.anti-forgery`
-     namespace.")
-
+  "Defines a strategy for protecting Ring handlers from CSRF attacks. "
   (valid-token? [strategy request token]
-    "Given the `request` and the `token` from that request, `valid-token?`
-     returns true if the token is valid. Returns false otherwise.")
+    "Given a request map and a token read from the request, return true if the
+    request is valid, false otherwise.")
+
+  (get-token [strategy request]
+    "Returns a token to be used by the handler for a given request. The return
+    value will be used in ring.middleware.anti-forgery/*anti-forgery-token*.")
 
   (write-token [strategy request response token]
-    "Some state management strategies do need to remember state (e.g., by
-    storing it to some storage accessible in different requests). `write-token`
-    is the method to handle state persistence, if necessary."))
+    "Write the token to the response, if necessary. Some strategies require
+    state to be stored in the session or in a cookie."))
