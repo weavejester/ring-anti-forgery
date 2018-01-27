@@ -1,5 +1,5 @@
 (ns ring.middleware.anti-forgery.session
-  "Implements a synchronizer token pattern, see https://goo.gl/WRm7Kp"
+  "Contains the synchronizer token (or session) strategy."
   (:require [ring.middleware.anti-forgery.strategy :as strategy]
             [crypto.equality :as crypto]
             [crypto.random :as random]))
@@ -27,5 +27,11 @@
               [:session :ring.middleware.anti-forgery/anti-forgery-token]
               token))))))
 
-(defn session-strategy []
+(defn session-strategy
+  "Implements a synchronizer token pattern strategy, suitable for passing to
+  the :strategy option in the ring.middleware.anti-forgery/wrap-anti-forgery
+  middleware.
+
+  See https://goo.gl/WRm7Kp for more information about this pattern."
+  []
   (->SessionStrategy))

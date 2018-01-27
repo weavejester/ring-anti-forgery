@@ -1,10 +1,16 @@
 (ns ring.middleware.anti-forgery
-  "Ring middleware to prevent CSRF attacks with an anti-forgery token."
+  "Ring middleware to prevent CSRF attacks."
   (:require [ring.middleware.anti-forgery.strategy :as strategy]
             [ring.middleware.anti-forgery.session :as session]))
 
 (def ^{:doc "Binding that stores an anti-forgery token that must be included
-            in POST forms if the handler is wrapped in wrap-anti-forgery."
+            in POST forms or in HTTP headers if the handler is wrapped in the
+            wrap-anti-forgery middleware.
+
+            The default session strategy stores the token directly,
+            but other strategies may wrap the token in a delay if the
+            token is expensive to compute. The var should therefore be
+            realized with clojure.core/force before use."
        :dynamic true}
   *anti-forgery-token*)
 
@@ -47,9 +53,9 @@
   access-denied response is returned.
 
   The anti-forgery token can be placed into a HTML page via the
-  *anti-forgery-token* var, which is bound to a random key unique to the
-  current session. By default, the token is expected to be in a form field
-  named '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token'
+  *anti-forgery-token* var, which is bound to a (possibly deferred) token.
+  By default, the token is expected to be in a form field named
+  '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token'
   headers.
 
   Accepts the following options:
@@ -61,11 +67,13 @@
                     incorrect or missing
 
   :error-handler  - a handler function to call if the anti-forgery token is
-                    incorrect or missing.
+                    incorrect or missing
 
-  :strategy       - a state management strategy,
-                    ring.middleware.anti-forgery.session/session-strategy by
-                    default.
+  :strategy       - a strategy for creating and validating anti-forgety tokens,
+                    which must satisfy the
+                    ring.middleware.anti-forgery.strategy/Strategy protocol
+                    (defaults to the session strategy:
+                    ring.middleware.anti-forgery.session/session-strategy)
 
   Only one of :error-response, :error-handler may be specified."
   ([handler]

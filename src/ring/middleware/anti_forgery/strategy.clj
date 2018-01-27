@@ -1,4 +1,5 @@
-(ns ring.middleware.anti-forgery.strategy)
+(ns ring.middleware.anti-forgery.strategy
+  "A namespace for containing the Strategy protocol.")
 
 (defprotocol Strategy
   "Defines a strategy for protecting Ring handlers from CSRF attacks. "
