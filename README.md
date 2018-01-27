@@ -2,16 +2,12 @@
 
 [![Build Status](https://travis-ci.org/ring-clojure/ring-anti-forgery.svg?branch=master)](https://travis-ci.org/ring-clojure/ring-anti-forgery)
 
-Ring middleware that prevents [CSRF][1] attacks by via a
-randomly-generated anti-forgery [synchronizer token][2]
-or by implementing an [encrypted token][3].
+[Ring][] middleware that prevents [CSRF][] attacks. By default this uses
+the [synchronizer token][] pattern.
 
-Make sure to always use tls (https), here especially use it to prevent
-replay attacks!
-
-[1]: http://en.wikipedia.org/wiki/Cross-site_request_forgery
-[2]: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Synchronizer_.28CSRF.29_Tokens
-[3]: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Encrypted_Token_Pattern
+[ring]: https://github.com/ring-clojure/ring
+[csrf]: https://en.wikipedia.org/wiki/Cross-site_request_forgery
+[synchronizer token]: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#Synchronizer_.28CSRF.29_Tokens
 
 ## Install
 
@@ -21,26 +17,19 @@ Add the following dependency to your `project.clj`:
 
 ## Usage
 
-The `wrap-anti-forgery` middleware should be applied to your Ring
-handler.
+The `wrap-anti-forgery` middleware function should be applied to your
+Ring handler.
 
-Any request that isn't a `HEAD` or `GET` request will now require an
-anti-forgery token, or an "access denied" response will be returned.
+Once applied, any request that isn't a `HEAD` or `GET` request will
+now require an anti-forgery token, or a 403 "access denied" response
+will be returned.
 
-As default, a synchronizer token pattern is used and the token is
-bound to the session.
-
-In both synchronizer and encrypted token mode the token is accessible
-via the `*anti-forgery-token*` var.
- 
-### Synchronizer token
- 
-You must use `wrap-anti-forgery` middleware inside of the standard
-`wrap-session` middleware in Ring:
+By default, the request is validated via the synchronizer token
+pattern, which requires the session middleware to be in place:
 
 ```clojure
-(use 'ring.middleware.anti-forgery
-     'ring.middleware.session)
+(require '[ring.middleware.anti-forgery :refer :all]
+         '[ring.middleware.session :refer :all])
 
 (def app
   (-> handler
@@ -48,16 +37,10 @@ You must use `wrap-anti-forgery` middleware inside of the standard
       wrap-session))
 ```
 
-### Encrypted token to be used without session
+The token will be used to validate the request is accessible via the
+`*anti-forgery-token*` var.
 
-You can use other strategies to manage state (create, validate and
-store the tokens), e.g. the encrypted token mode without the
-`wrap-session` middleware. To do so, refer to
-[ring-anti-forgery-strategies][4]
-
-[4]: https://github.com/gorillalabs/ring-anti-forgery-strategies.
-
-## Token usage
+### Custom token reader
 
 By default the middleware looks for the anti-forgery token in the
 `__anti-forgery-token` form parameter, which can be added to your
@@ -88,7 +71,7 @@ should return the anti-forgery token found in the request.
       (wrap-session)))
 ```
 
-## Error handling
+### Custom error handling
 
 It's also possible to customize the error response returned when the
 token is invalid or missing:
@@ -118,6 +101,27 @@ Or, for more control, an error handler can be supplied:
       (wrap-anti-forgery {:error-handler custom-error-handler})
       (wrap-session)))
 ```
+
+### Custom token strategy
+
+The synchronizer pattern is not the only way of preventing CSRF
+attacks. There a number of [different strategies][], and the
+middleware in this library can support them through the `:strategy`
+option:
+
+```clojure
+(def app
+  (wrap-anti-forgery handler {:strategy custom-strategy}))
+```
+
+The custom strategy must satisfy the [Strategy protocol][]. Some
+third-party strategies already exist:
+
+* [Encrypted token strategy][]
+
+[different strategies]: https://www.owasp.org/index.php/Cross-Site_Request_Forgery_(CSRF)_Prevention_Cheat_Sheet#CSRF_Specific_Defense
+[strategy protocol]: https://github.com/ring-clojure/ring-anti-forgery/blob/master/src/ring/middleware/anti_forgery/strategy.clj
+[encrypted token strategy]: https://github.com/gorillalabs/ring-anti-forgery-strategies
 
 ## Caveats
 
