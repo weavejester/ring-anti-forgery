@@ -123,6 +123,10 @@ third-party strategies already exist:
 [strategy protocol]: https://github.com/ring-clojure/ring-anti-forgery/blob/master/src/ring/middleware/anti_forgery/strategy.clj
 [encrypted token strategy]: https://github.com/gorillalabs/ring-anti-forgery-strategies
 
+## Further Documentation
+
+* [API docs](https://ring-clojure.github.io/ring-anti-forgery/)
+
 ## Caveats
 
 This middleware will prevent all HTTP methods except for GET and HEAD
