@@ -13,7 +13,7 @@ the [synchronizer token][] pattern.
 
 Add the following dependency to your `project.clj`:
 
-    [ring/ring-anti-forgery "1.1.0"]
+    [ring/ring-anti-forgery "1.2.0"]
 
 ## Usage
 
