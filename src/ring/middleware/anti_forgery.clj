@@ -54,7 +54,10 @@
 
   The anti-forgery token can be placed into a HTML page via the
   *anti-forgery-token* var, which is bound to a (possibly deferred) token.
-  By default, the token is expected to be in a form field named
+  The token is also available in the request under
+  `:anti-forgery-token`.
+
+  By default, the token is expected to be POSTed in a form field named
   '__anti-forgery-token', or in the 'X-CSRF-Token' or 'X-XSRF-Token'
   headers.
 
@@ -88,14 +91,14 @@
         (if (valid-request? strategy request read-token)
           (let [token (strategy/get-token strategy request)]
             (binding [*anti-forgery-token* token]
-              (when-let [response (handler request)]
+              (when-let [response (handler (assoc request :anti-forgery-token token))]
                 (strategy/write-token strategy request response token))))
           (error-handler request)))
        ([request respond raise]
         (if (valid-request? strategy request read-token)
           (let [token (strategy/get-token strategy request)]
             (binding [*anti-forgery-token* token]
-              (handler request
+              (handler (assoc request :anti-forgery-token token)
                        #(respond
                          (when %
                            (strategy/write-token strategy request % token)))
