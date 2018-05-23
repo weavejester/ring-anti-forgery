@@ -68,6 +68,21 @@
       (is (= (get-in response [:session ::af/anti-forgery-token])
              (:body response))))))
 
+(deftest token-in-request-test
+ (letfn [(handler
+           ([request] {:status 200 :headers {} :body (:anti-forgery-token request)})
+           ([request respond _] (respond (handler request))))]
+   (let [app      (wrap-anti-forgery handler)
+         response (app (mock/request :get "/"))]
+     (is (= (get-in response [:session ::af/anti-forgery-token])
+            (:body response))))
+   (let [app   (wrap-anti-forgery handler)
+         resp  (promise)
+         error (promise)]
+     (app (mock/request :get "/") resp error)
+     (is (= (get-in @resp [:session ::af/anti-forgery-token])
+            (:body @resp))))))
+
 (deftest nil-response-test
   (letfn [(handler [request] nil)]
     (let [response ((wrap-anti-forgery handler) (mock/request :get "/"))]

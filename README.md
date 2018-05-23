@@ -38,7 +38,8 @@ pattern, which requires the session middleware to be in place:
 ```
 
 The token will be used to validate the request is accessible via the
-`*anti-forgery-token*` var.
+`*anti-forgery-token*` var. The token is also placed in the request
+under the `:anti-forgery-token` key.
 
 ### Custom token reader
 
